@@ -18,6 +18,11 @@
             <artifactId>ddd-domain</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.thangnt.ddd.infrastructure</groupId>
+            <artifactId>ddd-infrastructure</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <properties>
