@@ -2,7 +2,7 @@ package com.thangnt.ddd.application.service.ticket.impl;
 
 import com.thangnt.ddd.application.service.ticket.TicketDetailsAppService;
 import com.thangnt.ddd.application.service.ticket.cache.TicketDetailCacheService;
-import com.thangnt.ddd.domain.model.entity.TicketDetails;
+import com.thangnt.ddd.domain.model.entity.Ticket;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -19,7 +19,7 @@ public class TicketDetailAppService implements TicketDetailsAppService {
 
     TicketDetailCacheService ticketDetailCacheService;
     @Override
-    public TicketDetails getById(Long id) {
+    public Ticket getById(Long id) {
         log.info("Find ticket {}", id);
 
         return ticketDetailCacheService.getTicketDefaultCache(id, System.currentTimeMillis());

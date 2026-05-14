@@ -1,6 +1,6 @@
 package com.thangnt.ddd.application.service.ticket.cache;
 
-import com.thangnt.ddd.domain.model.entity.TicketDetails;
+import com.thangnt.ddd.domain.model.entity.Ticket;
 import com.thangnt.ddd.domain.service.TicketDetailService;
 import com.thangnt.ddd.infrastructure.distributed.redisson.RedissonDistributedLocker;
 import com.thangnt.ddd.infrastructure.distributed.redisson.RedissonDistributedService;
@@ -25,8 +25,8 @@ public class TicketDetailCacheService {
 
     TicketDetailService ticketDetailService;
 
-    public TicketDetails getTicketDefaultCache(Long ticketId, Long version) {
-        TicketDetails ticketDetails = redisInfraService.getObject(genTicketRedisKey(ticketId), TicketDetails.class);
+    public Ticket getTicketDefaultCache(Long ticketId, Long version) {
+        Ticket ticketDetails = redisInfraService.getObject(genTicketRedisKey(ticketId), Ticket.class);
         if (ticketDetails != null) {
             return ticketDetails;
         }
@@ -38,7 +38,7 @@ public class TicketDetailCacheService {
             if (!isLock) {
                 return ticketDetails;
             }
-            ticketDetails = redisInfraService.getObject(genTicketRedisKey(ticketId), TicketDetails.class);
+            ticketDetails = redisInfraService.getObject(genTicketRedisKey(ticketId), Ticket.class);
             if (ticketDetails != null) {
                 return ticketDetails;
             }

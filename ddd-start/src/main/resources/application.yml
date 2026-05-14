@@ -1,4 +1,15 @@
 spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/booking_system?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: dbpass
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
   jpa:
     database: mysql
     show-sql: true
@@ -40,13 +51,13 @@ resilience4j:
   circuitbreaker:
     instances:
       cbBackEndCheck:
-              registerHealthIndicator: true
-              slidingWindowSize: 10
-              permittedNumberOfCallsInHalfOpenState: 3 # for open half state. allow number of request to test before close breaker
-              minimumNumberOfCalls: 5 # number of request sent before judge the risk of service down
-              waitDurationInOpenState: 50s
-              failureRateThreshold: 50
-              eventConsumerBufferSize: 10
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3 # for open half state. allow number of request to test before close breaker
+        minimumNumberOfCalls: 5 # number of request sent before judge the risk of service down
+        waitDurationInOpenState: 50s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
 
 management:
   health:

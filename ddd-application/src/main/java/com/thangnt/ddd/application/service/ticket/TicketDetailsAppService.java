@@ -1,7 +1,7 @@
 package com.thangnt.ddd.application.service.ticket;
 
-import com.thangnt.ddd.domain.model.entity.TicketDetails;
+import com.thangnt.ddd.domain.model.entity.Ticket;
 
 public interface TicketDetailsAppService {
-    TicketDetails getById(Long id);
+    Ticket getById(Long id);
 }
