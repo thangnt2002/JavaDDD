@@ -31,7 +31,7 @@ public class TicketDetailCacheService {
             return ticketDetails;
         }
 
-        RedissonDistributedLocker locker = redissonDistributedService.getDistributedLock("GET_TICkET_BY_ID_LOCK_KEY_" + ticketId);
+        RedissonDistributedLocker locker = redissonDistributedService.getDistributedLock("GET_TICKET_BY_ID_LOCK_KEY_" + ticketId);
         try {
             // wait max 1s to get lock from another thread and wait max 5s before unlock
             boolean isLock = locker.tryLock(1, 5, TimeUnit.SECONDS);
@@ -45,7 +45,7 @@ public class TicketDetailCacheService {
             ticketDetails = ticketDetailService.getById(ticketId);
             log.info("FROM DBS => {}, {}", ticketDetails, version);
             log.info("Ticket not exist ...... {}", version);
-            redisInfraService.setObject("key_" + ticketId, ticketDetails);
+            redisInfraService.setObject(genTicketRedisKey(ticketId), ticketDetails);
             return ticketDetails;
         } catch (Exception e) {
             log.error(e.getMessage());
