@@ -3,6 +3,7 @@ package com.thangnt.ddd.domain.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,7 +20,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Ticket {
+public class Ticket implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,8 +30,8 @@ public class Ticket {
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
-    @Column(name = "desc", columnDefinition = "TEXT")
-    private String desc;
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;

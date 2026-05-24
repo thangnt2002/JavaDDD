@@ -1,5 +1,7 @@
 package com.thangnt.ddd.application.service.ticket.cache;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.thangnt.ddd.domain.model.entity.Ticket;
 import com.thangnt.ddd.domain.service.TicketDetailService;
 import com.thangnt.ddd.infrastructure.distributed.redisson.RedissonDistributedLocker;
@@ -25,9 +27,22 @@ public class TicketDetailCacheService {
 
     TicketDetailService ticketDetailService;
 
+    static Cache<Long, Ticket> ticketLocalCache = CacheBuilder.newBuilder()
+            .initialCapacity(10)
+            .concurrencyLevel(5)
+            .expireAfterWrite(1, TimeUnit.MINUTES)
+            .build();
+
     public Ticket getTicketDefaultCache(Long ticketId, Long version) {
-        Ticket ticketDetails = redisInfraService.getObject(genTicketRedisKey(ticketId), Ticket.class);
+        Ticket ticketDetails = getTicketLocalCache(ticketId);
         if (ticketDetails != null) {
+            return ticketDetails;
+        }
+
+        ticketDetails = redisInfraService.getObject(genTicketRedisKey(ticketId), Ticket.class);
+
+        if (ticketDetails != null) {
+            ticketLocalCache.put(ticketId, ticketDetails);
             return ticketDetails;
         }
 
@@ -36,7 +51,7 @@ public class TicketDetailCacheService {
             // wait max 1s to get lock from another thread and wait max 5s before unlock
             boolean isLock = locker.tryLock(1, 5, TimeUnit.SECONDS);
             if (!isLock) {
-                return ticketDetails;
+                return redisInfraService.getObject(genTicketRedisKey(ticketId), Ticket.class);
             }
             ticketDetails = redisInfraService.getObject(genTicketRedisKey(ticketId), Ticket.class);
             if (ticketDetails != null) {
@@ -46,6 +61,7 @@ public class TicketDetailCacheService {
             log.info("FROM DBS => {}, {}", ticketDetails, version);
             log.info("Ticket not exist ...... {}", version);
             redisInfraService.setObject(genTicketRedisKey(ticketId), ticketDetails);
+            ticketLocalCache.put(ticketId, ticketDetails);
             return ticketDetails;
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -55,8 +71,15 @@ public class TicketDetailCacheService {
         return null;
     }
 
+    private Ticket getTicketLocalCache(Long id){
+        try{
+            return ticketLocalCache.getIfPresent(id);
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
     private String genTicketRedisKey(Long ticketId){
         return "GET_TICKET_ID_EVENT_"+ ticketId;
     }
 }
-//đợi tối đa 1s để lấy đc lock, unlock chậm nhất 5s sau khi có lock

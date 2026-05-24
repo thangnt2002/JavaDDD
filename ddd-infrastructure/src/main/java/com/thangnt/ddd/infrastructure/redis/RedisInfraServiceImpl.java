@@ -49,6 +49,10 @@ public class RedisInfraServiceImpl implements RedisInfraService{
             return null;
         }
 
+        if(targetValueType.isInstance(result)){
+            return targetValueType.cast(result);
+        }
+
         ObjectMapper mapper = new ObjectMapper();
         if(result instanceof Map){
             try {
