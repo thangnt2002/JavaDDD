@@ -1,5 +1,8 @@
 package com.thangnt.ddd.application.service.ticket.impl;
 
+import com.thangnt.ddd.application.dto.response.TicketResponseDTO;
+import com.thangnt.ddd.application.mapper.TicketItemMapper;
+import com.thangnt.ddd.application.dto.cache.TicketCacheDTO;
 import com.thangnt.ddd.application.service.ticket.TicketDetailsAppService;
 import com.thangnt.ddd.application.service.ticket.cache.TicketDetailCacheService;
 import com.thangnt.ddd.domain.model.entity.Ticket;
@@ -18,20 +21,24 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TicketDetailAppService implements TicketDetailsAppService {
 
-//    TicketDetailDomainService ticketDetailDomainService;
-
     TicketDetailCacheService ticketDetailCacheService;
     JpaTicketRepository ticketRepository;
 
     @Override
-    public Ticket getById(Long id) {
-        log.info("Find ticket {}", id);
-
-        return ticketDetailCacheService.getTicketDefaultCache(id, System.currentTimeMillis());
+    public TicketResponseDTO getById(Long id, Long version) {
+        TicketCacheDTO ticketCacheDTO =  ticketDetailCacheService.getTicket(id, version);
+        TicketResponseDTO dto =  TicketItemMapper.toTicketDTO(ticketCacheDTO.getTicket());
+        dto.setVersion(ticketCacheDTO.getVersion());
+        return dto;
     }
 
     @Override
     public List<Ticket> getAll() {
         return ticketRepository.findAll();
+    }
+
+    @Override
+    public boolean orderTicket(Long ticketId) {
+        return ticketDetailCacheService.orderTicket(ticketId);
     }
 }

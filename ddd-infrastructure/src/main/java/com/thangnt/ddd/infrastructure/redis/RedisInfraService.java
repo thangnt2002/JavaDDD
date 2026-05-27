@@ -5,4 +5,5 @@ public interface RedisInfraService {
     String getString(String key, String value);
     void setObject(String key, Object value);
     <T> T getObject(String key, Class<T> value);
+    void delete(String key);
 }

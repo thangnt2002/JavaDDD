@@ -2,6 +2,7 @@ package com.thangnt.ddd.application.service.ticket.cache;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.thangnt.ddd.application.dto.cache.TicketCacheDTO;
 import com.thangnt.ddd.domain.model.entity.Ticket;
 import com.thangnt.ddd.domain.service.TicketDetailService;
 import com.thangnt.ddd.infrastructure.distributed.redisson.RedissonDistributedLocker;
@@ -27,41 +28,60 @@ public class TicketDetailCacheService {
 
     TicketDetailService ticketDetailService;
 
-    static Cache<Long, Ticket> ticketLocalCache = CacheBuilder.newBuilder()
+    static Cache<Long, TicketCacheDTO> ticketLocalCache = CacheBuilder.newBuilder()
             .initialCapacity(10)
             .concurrencyLevel(5)
             .expireAfterWrite(1, TimeUnit.MINUTES)
             .build();
 
-    public Ticket getTicketDefaultCache(Long ticketId, Long version) {
-        Ticket ticketDetails = getTicketLocalCache(ticketId);
+    public boolean orderTicket(Long ticketId) {
+        ticketLocalCache.invalidate(ticketId);
+        redisInfraService.delete(genTicketRedisKey(ticketId));
+        return true;
+    }
+
+    public TicketCacheDTO getTicket(Long ticketId, Long version) {
+        TicketCacheDTO ticketDetails = getTicketLocalCache(ticketId);
         if (ticketDetails != null) {
-            return ticketDetails;
+
+            if (version == null || version <= ticketDetails.getVersion()) {
+                log.info("GET TICKET FROM LOCAL CACHE: versionUser:{}, versionLocal: {}", version, ticketDetails.getVersion());
+                return ticketDetails;
+            }
         }
 
-        ticketDetails = redisInfraService.getObject(genTicketRedisKey(ticketId), Ticket.class);
+        return getTicketFromDistributedCache(ticketId);
+    }
 
-        if (ticketDetails != null) {
-            ticketLocalCache.put(ticketId, ticketDetails);
-            return ticketDetails;
+    public TicketCacheDTO getTicketFromDistributedCache(Long ticketId) {
+        TicketCacheDTO ticketCacheDTO = redisInfraService.getObject(genTicketRedisKey(ticketId), TicketCacheDTO.class);
+        log.info("GET TICKET FROM DISTRIBUTED CACHE");
+        if (ticketCacheDTO == null) {
+            // lock()
+            ticketCacheDTO = getTicketDatabase(ticketId);
         }
+        ticketLocalCache.put(ticketId, ticketCacheDTO);
+        return ticketCacheDTO;
+    }
+
+
+    public TicketCacheDTO getTicketDatabase(Long ticketId) {
 
         RedissonDistributedLocker locker = redissonDistributedService.getDistributedLock("GET_TICKET_BY_ID_LOCK_KEY_" + ticketId);
         try {
             // wait max 1s to get lock from another thread and wait max 5s before unlock
             boolean isLock = locker.tryLock(1, 5, TimeUnit.SECONDS);
             if (!isLock) {
-                return redisInfraService.getObject(genTicketRedisKey(ticketId), Ticket.class);
+                return redisInfraService.getObject(genTicketRedisKey(ticketId), TicketCacheDTO.class);
             }
-            ticketDetails = redisInfraService.getObject(genTicketRedisKey(ticketId), Ticket.class);
+            TicketCacheDTO ticketDetails = redisInfraService.getObject(genTicketRedisKey(ticketId), TicketCacheDTO.class);
             if (ticketDetails != null) {
                 return ticketDetails;
             }
-            ticketDetails = ticketDetailService.getById(ticketId);
-            log.info("FROM DBS => {}, {}", ticketDetails, version);
-            log.info("Ticket not exist ...... {}", version);
+
+            Ticket ticket = ticketDetailService.getById(ticketId);
+            ticketDetails = new TicketCacheDTO().withClone(ticket).withVersion(System.currentTimeMillis());
             redisInfraService.setObject(genTicketRedisKey(ticketId), ticketDetails);
-            ticketLocalCache.put(ticketId, ticketDetails);
             return ticketDetails;
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -71,15 +91,15 @@ public class TicketDetailCacheService {
         return null;
     }
 
-    private Ticket getTicketLocalCache(Long id){
-        try{
+    private TicketCacheDTO getTicketLocalCache(Long id) {
+        try {
             return ticketLocalCache.getIfPresent(id);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
     }
 
-    private String genTicketRedisKey(Long ticketId){
-        return "GET_TICKET_ID_EVENT_"+ ticketId;
+    private String genTicketRedisKey(Long ticketId) {
+        return "GET_TICKET_ID_EVENT_" + ticketId;
     }
 }

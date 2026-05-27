@@ -72,4 +72,12 @@ public class RedisInfraServiceImpl implements RedisInfraService{
         }
         return  null;
     }
+
+    @Override
+    public void delete(String key) {
+        if(!StringUtils.hasLength(key)){
+            return;
+        }
+        redisTemplate.delete(key);
+    }
 }
