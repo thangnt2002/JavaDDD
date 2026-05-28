@@ -10,7 +10,7 @@ A high-precision online ticket booking system designed using **Domain-Driven Des
 * **Domain-Driven Design (DDD):** Clean separation of concerns into *Domain, Application, Infrastructure, and Controller (API)* layers.
 
 ### 2. High-Concurrency & Race Condition Mitigation
-* **Distributed Locks (Redisson):** Leverages Redis-based Distributed Locks to synchronize ticket deduction tasks (`Inventory Decrement`) across a multi-instance/multi-node environment. This prevents simultaneous write conflicts at the database level.
+* **Distributed Locks (Redisson):** Leverages Redis-based Distributed Locks to synchronize ticket prevents simultaneous write conflicts and reduce load at the database level.
 * **Multi-level Caching Strategy:**
     * **L1 Cache (Guava Cache):** An in-memory JVM local cache for ultra-high-frequency, read-heavy data that changes infrequently (e.g., event details, raw seat layouts). Response times are kept within microseconds ($\mu s$).
     * **L2 Cache (Redis Cluster):** A distributed cache managing real-time available ticket counts. Incoming availability checks are intercepted and absorbed here before hitting the database.
@@ -24,6 +24,6 @@ A high-precision online ticket booking system designed using **Domain-Driven Des
 
 ---
 
-## 📁 Project Directory Structure (DDD Layout)
+## Project Directory Structure (DDD Layout)
 
 The project adheres to a strict DDD Layered Architecture to isolate the Domain Layer from external frameworks:
