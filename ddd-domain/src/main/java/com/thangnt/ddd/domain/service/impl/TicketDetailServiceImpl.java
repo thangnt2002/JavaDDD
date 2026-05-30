@@ -1,6 +1,8 @@
 package com.thangnt.ddd.domain.service.impl;
 
 import com.thangnt.ddd.domain.model.entity.Ticket;
+import com.thangnt.ddd.domain.model.entity.TicketDetails;
+import com.thangnt.ddd.domain.repository.TicketDetailsRepository;
 import com.thangnt.ddd.domain.repository.TicketRepository;
 import com.thangnt.ddd.domain.service.TicketDetailService;
 import lombok.AccessLevel;
@@ -13,10 +15,10 @@ import org.springframework.stereotype.Service;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TicketDetailServiceImpl implements TicketDetailService {
 
-    TicketRepository ticketRepository;
+    TicketDetailsRepository ticketDetailsRepository;
 
     @Override
-    public Ticket getById(Long id) {
-        return ticketRepository.findById(id);
+    public TicketDetails getById(Long id) {
+        return ticketDetailsRepository.findById(id);
     }
 }

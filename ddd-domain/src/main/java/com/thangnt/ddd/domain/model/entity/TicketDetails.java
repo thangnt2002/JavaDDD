@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "ticket_item",
+        name = "ticket_details",
         indexes = {
                 @Index(name = "idx_end_time", columnList = "sale_end_time"),
                 @Index(name = "idx_start_time", columnList = "sale_start_time"),
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TicketItem {
+public class TicketDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

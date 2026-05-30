@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class TicketResponseDTO {
+public class TicketDetailsResponseDTO {
     private Long id;
     private String name;
     private String description;

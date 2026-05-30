@@ -1,12 +1,12 @@
 package com.thangnt.ddd.application.service.ticket.impl;
 
-import com.thangnt.ddd.application.dto.response.TicketResponseDTO;
-import com.thangnt.ddd.application.mapper.TicketItemMapper;
-import com.thangnt.ddd.application.dto.cache.TicketCacheDTO;
+import com.thangnt.ddd.application.dto.response.TicketDetailsResponseDTO;
+import com.thangnt.ddd.application.mapper.TicketDetailsMapper;
+import com.thangnt.ddd.application.dto.cache.TicketDetailsCacheDTO;
 import com.thangnt.ddd.application.service.ticket.TicketDetailsAppService;
-import com.thangnt.ddd.application.service.ticket.cache.TicketDetailCacheService;
-import com.thangnt.ddd.domain.model.entity.Ticket;
-import com.thangnt.ddd.infrastructure.persistence.repository.JpaTicketRepository;
+import com.thangnt.ddd.application.service.ticket.cache.TicketDetailsCacheService;
+import com.thangnt.ddd.domain.model.entity.TicketDetails;
+import com.thangnt.ddd.infrastructure.persistence.repository.JpaTicketDetailsRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,24 +21,28 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TicketDetailAppService implements TicketDetailsAppService {
 
-    TicketDetailCacheService ticketDetailCacheService;
-    JpaTicketRepository ticketRepository;
+    TicketDetailsCacheService ticketDetailsCacheService;
+    JpaTicketDetailsRepository ticketDetailsRepository;
 
     @Override
-    public TicketResponseDTO getById(Long id, Long version) {
-        TicketCacheDTO ticketCacheDTO =  ticketDetailCacheService.getTicket(id, version);
-        TicketResponseDTO dto =  TicketItemMapper.toTicketDTO(ticketCacheDTO.getTicket());
-        dto.setVersion(ticketCacheDTO.getVersion());
+    public TicketDetailsResponseDTO getById(Long id, Long version) {
+        TicketDetailsCacheDTO ticketDetailsCacheDTO =  ticketDetailsCacheService.getTicketDetails(id, version);
+        TicketDetailsResponseDTO dto =  TicketDetailsMapper.toTicketDetailsDTO(ticketDetailsCacheDTO.getTicketDetails());
+        dto.setVersion(ticketDetailsCacheDTO.getVersion());
         return dto;
     }
 
     @Override
-    public List<Ticket> getAll() {
-        return ticketRepository.findAll();
+    public List<TicketDetailsResponseDTO> getAll() {
+        List<TicketDetails> ticketDetailsList = ticketDetailsRepository.findAll();
+        return ticketDetailsList
+                .stream()
+                .map(TicketDetailsMapper::toTicketDetailsDTO)
+                .toList();
     }
 
     @Override
-    public boolean orderTicket(Long ticketId) {
-        return ticketDetailCacheService.orderTicket(ticketId);
+    public int orderTicket(Long ticketId, int quantity) {
+        return ticketDetailsCacheService.orderTicket(ticketId, quantity);
     }
 }

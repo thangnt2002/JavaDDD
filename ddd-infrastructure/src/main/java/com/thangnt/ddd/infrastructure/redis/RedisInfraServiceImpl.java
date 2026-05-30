@@ -74,6 +74,21 @@ public class RedisInfraServiceImpl implements RedisInfraService{
     }
 
     @Override
+    public void setInt(String key, int value) {
+        redisTemplate.opsForValue().set(key, value);
+    }
+
+    @Override
+    public int getInt(String key) {
+        return (int) redisTemplate.opsForValue().get(key);
+    }
+
+    @Override
+    public RedisTemplate<String, Object> getRedisTemplate() {
+        return redisTemplate;
+    }
+
+    @Override
     public void delete(String key) {
         if(!StringUtils.hasLength(key)){
             return;
